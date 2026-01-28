@@ -30,7 +30,6 @@ import gbr/shared/lookup as l
 import gbr/shared/utils as u
 
 import gbr/json/schema/ast
-import gbr/json/schema/decodex
 import gbr/json/schema/lift
 import gbr/json/schema/types
 
@@ -169,7 +168,7 @@ pub fn decoder() -> decode.Decoder(domain.Schema) {
   use <- decode.recursive()
   decode.one_of(
     {
-      use #(type_, nullable_decoder) <- decodex.discriminate(
+      use #(type_, nullable_decoder) <- u.discriminate(
         "type",
         type_decoder(),
         Null(None, None, False),
@@ -186,14 +185,14 @@ pub fn decoder() -> decode.Decoder(domain.Schema) {
           |> Ok
         "integer" ->
           {
-            use multiple_of <- decodex.optional_field("multipleOf", decode.int)
-            use maximum <- decodex.optional_field("maximum", decode.int)
-            use exclusive_maximum <- decodex.optional_field(
+            use multiple_of <- u.optional_field("multipleOf", decode.int)
+            use maximum <- u.optional_field("maximum", decode.int)
+            use exclusive_maximum <- u.optional_field(
               "exclusiveMaximum",
               decode.int,
             )
-            use minimum <- decodex.optional_field("minimum", decode.int)
-            use exclusive_minimum <- decodex.optional_field(
+            use minimum <- u.optional_field("minimum", decode.int)
+            use exclusive_minimum <- u.optional_field(
               "exclusiveMinimum",
               decode.int,
             )
@@ -216,14 +215,14 @@ pub fn decoder() -> decode.Decoder(domain.Schema) {
           |> Ok
         "number" ->
           {
-            use multiple_of <- decodex.optional_field("multipleOf", decode.int)
-            use maximum <- decodex.optional_field("maximum", decode.int)
-            use exclusive_maximum <- decodex.optional_field(
+            use multiple_of <- u.optional_field("multipleOf", decode.int)
+            use maximum <- u.optional_field("maximum", decode.int)
+            use exclusive_maximum <- u.optional_field(
               "exclusiveMaximum",
               decode.int,
             )
-            use minimum <- decodex.optional_field("minimum", decode.int)
-            use exclusive_minimum <- decodex.optional_field(
+            use minimum <- u.optional_field("minimum", decode.int)
+            use exclusive_minimum <- u.optional_field(
               "exclusiveMinimum",
               decode.int,
             )
@@ -247,10 +246,10 @@ pub fn decoder() -> decode.Decoder(domain.Schema) {
 
         "string" ->
           {
-            use max_length <- decodex.optional_field("maxLength", decode.int)
-            use min_length <- decodex.optional_field("minLength", decode.int)
-            use pattern <- decodex.optional_field("pattern", decode.string)
-            use format <- decodex.optional_field("format", decode.string)
+            use max_length <- u.optional_field("maxLength", decode.int)
+            use min_length <- u.optional_field("minLength", decode.int)
+            use pattern <- u.optional_field("pattern", decode.string)
+            use format <- u.optional_field("format", decode.string)
             use nullable <- decode.then(nullable_decoder)
             use title <- decode.then(title_decoder())
             use description <- decode.then(description_decoder())
@@ -279,9 +278,9 @@ pub fn decoder() -> decode.Decoder(domain.Schema) {
         "array" ->
           {
             {
-              use max_items <- decodex.optional_field("maxItems", decode.int)
-              use min_items <- decodex.optional_field("minItems", decode.int)
-              use unique_items <- decodex.default_field(
+              use max_items <- u.optional_field("maxItems", decode.int)
+              use min_items <- u.optional_field("minItems", decode.int)
+              use unique_items <- u.default_field(
                 "uniqueItems",
                 decode.bool,
                 False,
@@ -308,16 +307,13 @@ pub fn decoder() -> decode.Decoder(domain.Schema) {
           {
             use properties <- decode.then(properties_decoder())
             use required <- decode.then(required_decoder())
-            use additional_properties <- decodex.optional_field(
+            use additional_properties <- u.optional_field(
               "additionalProperties",
               ref_decoder(decoder()),
             )
-            use max_properties <- decodex.optional_field(
-              "maxProperties",
-              decode.int,
-            )
+            use max_properties <- u.optional_field("maxProperties", decode.int)
             // "Omitting this keyword has the same behavior as a value of 0"
-            use min_properties <- decodex.default_field(
+            use min_properties <- u.default_field(
               "minProperties",
               decode.int,
               0,
@@ -627,8 +623,8 @@ fn ref_decoder(of: decode.Decoder(t)) -> decode.Decoder(Ref(t)) {
   decode.one_of(
     {
       use ref <- decode.field("$ref", decode.string)
-      use summary <- decodex.optional_field("summary", decode.string)
-      use description <- decodex.optional_field("description", decode.string)
+      use summary <- u.optional_field("summary", decode.string)
+      use description <- u.optional_field("description", decode.string)
       decode.success(Ref(ref, summary, description))
     },
     [decode.map(of, Inline)],
@@ -636,7 +632,7 @@ fn ref_decoder(of: decode.Decoder(t)) -> decode.Decoder(Ref(t)) {
 }
 
 fn properties_decoder() {
-  decodex.default_field(
+  u.default_field(
     "properties",
     decode.dict(decode.string, ref_decoder(decoder())),
     dict.new(),
@@ -679,28 +675,23 @@ fn non_empty_list_of_any_decoder() {
 }
 
 fn required_decoder() {
-  decodex.default_field(
-    "required",
-    decode.list(decode.string),
-    [],
-    decode.success,
-  )
+  u.default_field("required", decode.list(decode.string), [], decode.success)
 }
 
 fn nullable_decoder() {
-  decodex.default_field("nullable", decode.bool, False, decode.success)
+  u.default_field("nullable", decode.bool, False, decode.success)
 }
 
 fn title_decoder() {
-  decodex.optional_field("title", decode.string, decode.success)
+  u.optional_field("title", decode.string, decode.success)
 }
 
 fn description_decoder() {
-  decodex.optional_field("description", decode.string, decode.success)
+  u.optional_field("description", decode.string, decode.success)
 }
 
 fn deprecated_decoder() {
-  decodex.default_field("deprecated", decode.bool, False, decode.success)
+  u.default_field("deprecated", decode.bool, False, decode.success)
 }
 
 fn ref_encode(ref) {
