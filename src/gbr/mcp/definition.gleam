@@ -55,12 +55,8 @@ pub type Effect(return, tool, prompt) {
     tool: tool,
     resume: fn(Result(Dict(String, utils.Any), String)) -> return,
   )
+  GetPrompt(prompt: prompt, resume: fn(List(Dict(String, utils.Any))) -> return)
   ReadResource(resource: defs.Resource, resume: fn(ResourceContents) -> return)
-  GetPrompt(
-    prompt: prompt,
-    // There is no "is_error" field on GetPromptReply.
-    resume: fn(List(defs.PromptMessage)) -> return,
-  )
   Complete(
     ref: CompletionReference,
     argument: CompleteArgument,

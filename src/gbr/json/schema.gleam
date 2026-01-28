@@ -34,14 +34,19 @@ import gbr/json/schema/lift
 import gbr/json/schema/types
 
 import gbr/json/schema/domain.{
-  type Ref, AllOf, AlwaysFails, AlwaysPasses, AnyOf, Array, Boolean, Enum,
-  Inline, Integer, Null, Number, Object, OneOf, Ref, String,
+  type Ref, type Schema, AllOf, AlwaysFails, AlwaysPasses, AnyOf, Array, Boolean,
+  Enum, Inline, Integer, Null, Number, Object, OneOf, Ref, String,
 }
 
 /// Alias ref. json schema
 ///
-type JsonSchema =
+pub type JsonSchema =
   dict.Dict(String, domain.Schema)
+
+/// Alias ref. object schema
+///
+pub type ObjectSchema =
+  List(#(String, Ref(Schema), Bool))
 
 /// Load json schema from raw content.
 ///
