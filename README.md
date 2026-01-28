@@ -18,7 +18,7 @@ pub fn main() -> Nil {
   let field = "definitions"
   let output = "./src/gbr/mcp/defs.gleam"
 
-  case loader.load_write(path, field, output) {
+  case loader.load_file_write(path, field, output) {
     Ok(Nil) -> io.println("> Definitions write to " <> output)
     Error(err) -> io.println_error(err)
   }

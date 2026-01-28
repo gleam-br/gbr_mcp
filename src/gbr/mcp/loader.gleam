@@ -67,10 +67,20 @@ pub fn load_file_write(
   output: String,
 ) -> Result(Nil, String) {
   path
+  |> load_file(field)
+  |> result.map(write_output(_, output))
+  |> result.flatten()
+}
+
+/// Read file path content, load and write definitions gleam code in output.
+///
+/// - path: File path to mcp json schema.
+/// - field: JSON schema field to load.
+///
+pub fn load_file(path: String, field: String) {
+  path
   |> read_path()
   |> result.map(load(_, field))
-  |> result.flatten()
-  |> result.map(write_output(_, output))
   |> result.flatten()
 }
 
