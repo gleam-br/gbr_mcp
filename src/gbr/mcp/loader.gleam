@@ -42,12 +42,12 @@ pub fn main() {
       const_mcp_defs_output,
     )
   {
-    Ok(Nil) -> io.println("[OK] Write defs code in " <> const_mcp_defs_output)
+    Ok(Nil) -> io.println("[OK] Write code in " <> const_mcp_defs_output)
     Error(err) -> io.println_error(err)
   }
 }
 
-/// Read file path content, load and write definitions gleam code in output.
+/// Read file path content, load and write gleam code in output.
 ///
 /// - path: File path to mcp json schema.
 /// - field: JSON schema field to load.
@@ -64,7 +64,7 @@ pub fn load_file_write(
   |> result.flatten()
 }
 
-/// Read file path content, load and write definitions gleam code in output.
+/// Read file path content, load and write gleam code in output.
 ///
 /// - path: File path to mcp json schema.
 /// - field: JSON schema field to load.
@@ -76,7 +76,7 @@ pub fn load_file(path: String, field: String) {
   |> result.flatten()
 }
 
-/// Content load and write definitions gleam code in output.
+/// Content load and write gleam code in output.
 ///
 /// - schema: MCP json schema content.
 /// - field: JSON schema field to load.

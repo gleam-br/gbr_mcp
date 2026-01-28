@@ -25,9 +25,9 @@ import glance_printer
 import justin
 import non_empty_list.{NonEmptyList}
 
-import gbr/shared/error
+import gbr/shared/error as e
 import gbr/shared/lookup as l
-import gbr/shared/utils
+import gbr/shared/utils as u
 
 import gbr/json/schema/ast
 import gbr/json/schema/decodex
@@ -57,7 +57,7 @@ pub fn load(json: String, location: String) -> Result(String, String) {
   // MCP JSON-RPC definitions
   use definitions <- result.try(
     json.parse(json, decode)
-    |> result.map_error(error.json_to_string),
+    |> result.map_error(e.json_to_string),
   )
 
   // Json schema definitions to code
@@ -71,11 +71,17 @@ pub fn load(json: String, location: String) -> Result(String, String) {
 /// - location: Selector location element to filter.
 ///
 pub fn generate(schema: JsonSchema, location: String) -> Result(String, String) {
+  let now =
+    timestamp.system_time()
+    |> timestamp.to_rfc3339(duration.minutes(0))
+  let set_header = u.header_code_generated(now, _)
+  let location = "#/" <> location <> "/"
+
   schema
-  |> values_map()
-  |> gen_schema_code()
-  |> run_single_location(location)
-  |> result.map(header_content)
+  |> map()
+  |> code()
+  |> run(location)
+  |> result.map(set_header)
 }
 
 /// Json schema from field name
@@ -359,7 +365,7 @@ pub fn decoder() -> decode.Decoder(domain.Schema) {
       ),
       decode.field(
         "const",
-        utils.any_decoder()
+        u.any_decoder()
           |> decode.map(fn(value) { Enum(non_empty_list.single(value)) }),
         decode.success,
       ),
@@ -501,10 +507,10 @@ pub fn encode(schema) {
       ])
     }
     Enum(non_empty_list.NonEmptyList(value, [])) ->
-      json_object([#("const", Some(utils.any_to_json(value)))])
+      json_object([#("const", Some(u.any_to_json(value)))])
     Enum(values) -> {
       let values = non_empty_list.to_list(values)
-      json_object([#("enum", Some(json.array(values, utils.any_to_json)))])
+      json_object([#("enum", Some(json.array(values, u.any_to_json)))])
     }
     AlwaysPasses -> json.bool(True)
     AlwaysFails -> json.bool(False)
@@ -516,7 +522,7 @@ pub fn encode(schema) {
 
 /// Generate json schema to gleam code content
 ///
-fn gen_schema_code(schemas) -> l.Lookup(String) {
+fn code(schemas) -> l.Lookup(String) {
   use #(custom_types, type_aliases, functions) <- l.then(parse(schemas))
 
   glance.Module(
@@ -534,7 +540,7 @@ fn gen_schema_code(schemas) -> l.Lookup(String) {
 ///
 /// > Throw panic if not is definition JSON-RPC.
 ///
-fn values_map(defs) {
+fn map(defs) {
   defs
   |> dict.map_values(fn(key, value) { values_lift(key, value) })
 }
@@ -578,13 +584,13 @@ fn lift_params(value) {
   }
 }
 
-fn run_single_location(lookup, prefix) {
+fn run(lookup, prefix) {
   case lookup {
     l.Lookup(ref, resume) ->
       case string.split_once(ref, prefix) {
         Ok(#("", inner)) ->
           resume(None, inner)
-          |> run_single_location(prefix)
+          |> run(prefix)
         _ -> Error("Unknown ref: " <> ref)
       }
 
@@ -594,6 +600,7 @@ fn run_single_location(lookup, prefix) {
 
 fn imports() {
   [
+    glance.Definition([], glance.Import("gbr/shared/utils", None, [], [])),
     glance.Definition([], glance.Import("gleam/dict", None, [], [])),
     glance.Definition([], glance.Import("gleam/dynamic/decode", None, [], [])),
     glance.Definition([], glance.Import("gleam/json", None, [], [])),
@@ -606,56 +613,11 @@ fn imports() {
         [glance.UnqualifiedImport("None", None)],
       ),
     ),
-    glance.Definition([], glance.Import("gbr/shared/utils", None, [], [])),
   ]
 }
 
 fn defs(xs) {
   list.map(xs, glance.Definition([], _))
-}
-
-fn header_content(contents) {
-  "// Licensed under the Lucid License (Individual Sovereignty & Non-Aggression)
-// See LICENSE file in the root of the repository.
-//......................=#%%*:...............................
-//....................:#@%##@@+..............................
-//....................=@%****%@#.............................
-//...................:@@#+=+**#@@=...........................
-//...................*@#*===+***@@#..........................
-//..................-@@*=====+***%@%-........................
-//..................@@*=---==++***#@@*:......................
-//.................*@#=-::--==+++***#@@@@@@@@@@@@@@@%+:......
-//................+@@-:.:::--=++++************######%@%:.....
-//.............+#@@%-:...:::--=++++++************###%@@-.....
-//........:*%@@@%+-:......::--==+++++++++++++++*###%@@*......
-//....-#@@@@%*+=:.........:::--=+++++++++++++======@@*.......
-//..+@@@#*++=::::::......::::::.:::::::::::::-===+@@+........
-//.:@@#**+=====--::::..........:::::-++=-:::-===+@@=.........
-//.:%@%%##**+++=-:...........::::::*%*+#%=:-===*@@-..........
-//..:*@@@%##*+-:::::-#%%#=::::::::=%+:::++-===*@%-...........
-//.....+@@@#==--:::-@*::+@=::-::++::::::::-===@%-............
-//.......-%@@*====--%-:::-::=#++#%:::::::-===+@#:............
-//.........:#@@#==-::::::::::-**=-=+++++++####@@=............
-//............#@@*=-:::::::::-=+++++++++++*###%@#:...........
-//.............-@%+=-::::::-+++++++++++++++*##%@@-...........
-//.............:%@+=-::::-++++++++++++++++++###%@#...........
-//.............:#@+=-::-=++++**########***++*##%@@=..........
-//..............#@*==:-+++*#####################%@@..........
-//..............*@*==-++*#####%%@@@@@@%%#########@@=.........
-//..............+@*==+######%@@@#-:-*%@@@@@@%%##%@@-.........
-//..............=@#=+#####%@@%=..........:=#@@@@@@-..........
-//..............=@#=*##%@@@#:................................
-//..............:%@*%%@@%=...................................
-//...............:*%%%*:.....................................
-//
-//
-//###########################################################
-//# Code auto generate with love by Gleam BR in:
-//# " <> timestamp.system_time()
-  |> timestamp.to_rfc3339(duration.minutes(0)) <> "
-//###########################################################
-//
-" <> contents
 }
 
 // PRIVATE
@@ -709,9 +671,9 @@ fn non_empty_list_of_schema_decoder() {
 }
 
 fn non_empty_list_of_any_decoder() {
-  use list <- decode.then(decode.list(utils.any_decoder()))
+  use list <- decode.then(decode.list(u.any_decoder()))
   case list {
-    [] -> decode.failure(NonEmptyList(utils.Null, []), "")
+    [] -> decode.failure(NonEmptyList(u.Null, []), "")
     [a, ..rest] -> decode.success(NonEmptyList(a, rest))
   }
 }
