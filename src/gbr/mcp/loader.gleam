@@ -3,14 +3,12 @@
 ////
 
 import gleam/io
-import gleam/json
 import gleam/result
 import gleam/string
 
 import simplifile
 
-import gbr/mcp/generator
-import gbr/shared/error
+import gbr/json/schema.{load}
 
 //const const_mcp_schema_date = "2025-11-25" // new
 const const_mcp_schema_date = "2025-06-18"
@@ -93,29 +91,6 @@ pub fn load_write(schema: String, field: String, output: String) {
     })
   })
   |> result.flatten()
-}
-
-/// Load MCP schema from origin url and gen defs.gleam file.
-///
-/// - schema: MCP json schema content.
-/// - field: MCP schema field to load.
-///
-pub fn load(schema: String, field: String) -> Result(String, String) {
-  let decode =
-    field
-    |> generator.json_schema_decoder()
-
-  // MCP JSON-RPC definitions
-  use definitions <- result.try(
-    json.parse(schema, decode)
-    |> result.map_error(error.json_to_string),
-  )
-
-  // MCP JSON-RPC definitions to gleam code
-  definitions
-  |> generator.values_map()
-  |> generator.gen_schema_file()
-  |> generator.run_location("#/" <> field <> "/")
 }
 
 // PRIVATE

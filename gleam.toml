@@ -9,15 +9,17 @@ links = []
 [dependencies]
 gbr_shared = { path = "../gbr_shared" }
 
-castor = "~> 1.0"
 simplifile = "~> 2.3"
 oas_generator = "~> 2.3"
+non_empty_list = "~> 2.2"
 
 gleam_stdlib = "~> 0.68"
 gleam_json = "~> 3.1"
 gleam_time = "~> 1.7"
 glance = ">= 3.0.0 and < 4.0.0"
 glance_printer = ">= 3.0.0 and < 4.0.0"
+gleam_crypto = ">= 1.5.1 and < 2.0.0"
+justin = ">= 1.0.1 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = "~> 1.9"

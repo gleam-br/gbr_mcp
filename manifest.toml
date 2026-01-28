@@ -28,13 +28,15 @@ packages = [
 ]
 
 [requirements]
-castor = { version = "~> 1.0" }
 gbr_shared = { path = "../gbr_shared" }
 glance = { version = ">= 3.0.0 and < 4.0.0" }
 glance_printer = { version = ">= 3.0.0 and < 4.0.0" }
+gleam_crypto = { version = ">= 1.5.1 and < 2.0.0" }
 gleam_json = { version = "~> 3.1" }
 gleam_stdlib = { version = "~> 0.68" }
 gleam_time = { version = "~> 1.7" }
 gleeunit = { version = "~> 1.9" }
+justin = { version = ">= 1.0.1 and < 2.0.0" }
+non_empty_list = { version = "~> 2.2" }
 oas_generator = { version = "~> 2.3" }
 simplifile = { version = "~> 2.3" }
