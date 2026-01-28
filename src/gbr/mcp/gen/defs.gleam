@@ -34,13 +34,12 @@
 //
 //###########################################################
 //# Code auto generate with love by Gleam BR in:
-//# 2026-01-28T04:32:07.466864Z
+//# 2026-01-28T06:09:06.6216112Z
 //###########################################################
 //
+import gbr/shared/utils
 import gleam/option.{type Option, None}
-import oas/generator/utils
 import gleam/json
-import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/dict
 

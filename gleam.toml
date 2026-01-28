@@ -7,12 +7,17 @@ licences = ["Apache-2.0"]
 links = []
 
 [dependencies]
-gleam_stdlib = "~> 0.68"
-simplifile = "~> 2.3"
+gbr_shared = { path = "../gbr_shared" }
+
 castor = "~> 1.0"
+simplifile = "~> 2.3"
+oas_generator = "~> 2.3"
+
+gleam_stdlib = "~> 0.68"
 gleam_json = "~> 3.1"
-oas_generator = ">= 2.3.0 and < 3.0.0"
-gleam_time = ">= 1.7.0 and < 2.0.0"
+gleam_time = "~> 1.7"
+glance = ">= 3.0.0 and < 4.0.0"
+glance_printer = ">= 3.0.0 and < 4.0.0"
 
 [dev-dependencies]
 gleeunit = "~> 1.9"
