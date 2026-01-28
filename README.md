@@ -11,10 +11,17 @@
 gleam add gbr_mcp@1
 ```
 ```gleam
-import gbr_mcp
+import gbr/mcp/loader
 
 pub fn main() -> Nil {
-  // TODO: An example of the project in use
+  let path = "./priv/2025-06-18-schema.json"
+  let field = "definitions"
+  let output = "./src/gbr/mcp/defs.gleam"
+
+  case loader.load_write(path, field, output) {
+    Ok(Nil) -> io.println("> Definitions write to " <> output)
+    Error(err) -> io.println_error(err)
+  }
 }
 ```
 
