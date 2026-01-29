@@ -39,13 +39,25 @@ import gbr/mcp/effect
 import gbr/mcp/gen/defs
 import gbr/mcp/loader
 
-// Alias
-//
-
-type Tool(t) =
+/// MCP Server tool spec.
+///
+/// Uses generic gbr/shared/utils.{type Tool}
+///
+pub type Tool(t) =
   u.Tool(t, schema.ObjectSchema, schema.ObjectSchema)
 
-/// MCP Server spec
+/// MCP Server spec.
+///
+/// - tools: List of tools
+/// - prompts: List of prompt def and decoder
+/// - resources: List of resource def
+/// - implementation: Def of implementation
+/// - resource_templates: List of resource template def.
+///
+/// Generic:
+///
+/// - tool: `gbr/shared/utils.{type Tool}` to wrapper into Tool.
+/// - prompt: Prompt def type. ?? TODO ??
 ///
 pub type Server(tool, prompt) {
   Server(
