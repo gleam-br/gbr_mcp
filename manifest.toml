@@ -3,6 +3,7 @@
 
 packages = [
   { name = "filepath", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "B06A9AF0BF10E51401D64B98E4B627F1D2E48C154967DA7AF4D0914780A6D40A" },
+  { name = "gbr_json", version = "1.0.0", build_tools = ["gleam"], requirements = ["gbr_shared", "glance", "glance_printer", "gleam_crypto", "gleam_json", "gleam_stdlib", "gleam_time", "justin", "non_empty_list"], source = "local", path = "../gbr_json" },
   { name = "gbr_shared", version = "1.0.2-alpha005", build_tools = ["gleam"], requirements = ["gleam_http", "gleam_json", "gleam_stdlib", "tom"], source = "local", path = "../gbr_shared" },
   { name = "glam", version = "2.0.3", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glam", source = "hex", outer_checksum = "237C2CE218A2A0A5D46D625F8EF5B78F964BC91018B78D692B17E1AB84295229" },
   { name = "glance", version = "3.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "glexer"], otp_app = "glance", source = "hex", outer_checksum = "F3458292AFB4136CEE23142A8727C1270494E7A96978B9B9F9D2C1618583EF3D" },
@@ -25,15 +26,10 @@ packages = [
 ]
 
 [requirements]
+gbr_json = { path = "../gbr_json" }
 gbr_shared = { path = "../gbr_shared" }
-glance = { version = "~> 3.0" }
-glance_printer = { version = "~> 3.0" }
-gleam_crypto = { version = "~> 1.5" }
 gleam_json = { version = "~> 3.1" }
 gleam_stdlib = { version = "~> 0.68" }
-gleam_time = { version = "~> 1.7" }
 gleeunit = { version = "~> 1.9" }
-justin = { version = "~> 1.0" }
-non_empty_list = { version = "~> 2.2" }
 pollux = { version = "~> 1.0" }
 simplifile = { version = "~> 2.3" }

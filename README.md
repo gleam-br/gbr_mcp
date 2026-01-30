@@ -18,19 +18,13 @@ MCP provides a standardized way to connect AI applications to external systems.
 
 > more: https://modelcontextprotocol.io/docs/getting-started/intro
 
-## Roadmap
-
-- [ ] Update dep `glance` from 3.x to 6.x
-  - [ ] Fix `glance_printer` to work with `6.x`
-- [ ] Update json schema to https://json-schema.org/draft/2020-12/schema
-  - ~~[ ] Lib `castor` not decode this draft, only https://json-schema.org/draft/draft-07/schema.~~
-  - [ ] Change `gbr/json/schema` to fix it.
-
 ## Running
 
 ```sh
 gleam add gbr_mcp@1
 ```
+
+## MCP JSON Schema Loading
 
 ```gleam
 import gbr/mcp/loader
@@ -46,6 +40,10 @@ pub fn main() -> Nil {
   }
 }
 ```
+
+## MCP JSON-RPC handler
+
+> TODO
 
 ## Development
 

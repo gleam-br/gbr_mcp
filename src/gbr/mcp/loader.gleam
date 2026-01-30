@@ -8,7 +8,7 @@ import gleam/string
 
 import simplifile
 
-import gbr/json/schema.{load}
+import gbr/json/schema
 
 //const const_mcp_schema_date = "2025-11-25" // new
 const const_mcp_schema_date = "2025-06-18"
@@ -72,7 +72,7 @@ pub fn load_file_write(
 pub fn load_file(path: String, field: String) {
   path
   |> read_path()
-  |> result.map(load(_, field))
+  |> result.map(schema.load(_, field))
   |> result.flatten()
 }
 
@@ -83,7 +83,7 @@ pub fn load_file(path: String, field: String) {
 /// - output: File path output to gleam code.
 ///
 pub fn load_write(schema: String, field: String, output: String) {
-  load(schema, field)
+  schema.load(schema, field)
   |> result.map(fn(c) {
     simplifile.write(output, c)
     |> result.map_error(fn(err) {

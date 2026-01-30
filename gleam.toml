@@ -7,18 +7,13 @@ licences = ["Apache-2.0"]
 links = []
 
 [dependencies]
+gbr_json = { path = "../gbr_json" }
 gbr_shared = { path = "../gbr_shared" }
 
-justin = "~> 1.0"
 pollux = "~> 1.0"
-non_empty_list = "~> 2.2"
 simplifile = "~> 2.3"
-glance = "~> 3.0"
-glance_printer = "~> 3.0"
 
 gleam_stdlib = "~> 0.68"
-gleam_time = "~> 1.7"
-gleam_crypto = "~> 1.5"
 gleam_json = "~> 3.1"
 
 [dev-dependencies]
