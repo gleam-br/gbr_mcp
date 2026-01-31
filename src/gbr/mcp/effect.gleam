@@ -10,6 +10,8 @@ import gbr/shared/utils as u
 
 import gbr/mcp/gen/defs
 
+/// TODO
+///
 pub type Effect(return, tool, prompt) {
   Done(message: return)
   CallTool(

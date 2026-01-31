@@ -19,6 +19,7 @@
 
 import gleam/dict
 import gleam/dynamic/decode
+import gleam/function
 import gleam/io
 import gleam/json
 import gleam/list
@@ -26,12 +27,11 @@ import gleam/option.{None, Some}
 import gleam/pair
 import gleam/result
 
-import pollux
-import pollux/reason
-
 import gbr/shared/log
 import gbr/shared/utils as u
 
+import gbr/json/rpc
+import gbr/json/rpc/error
 import gbr/json/schema
 import gbr/json/schema/domain
 
@@ -116,14 +116,16 @@ pub type ClientRequest {
 /// - Read file from `priv/` internal.
 /// - Write code to file in `src/gbr/mcp/gen` internal.
 ///
-pub fn load() {
+pub fn load() -> Nil {
   loader.main()
 }
 
 /// MCP JSON-RPC request decoder
 ///
-pub fn request_decoder() {
-  pollux.request_decoder(
+pub fn request_decoder() -> decode.Decoder(
+  rpc.Request(ClientRequest, ClientNotification),
+) {
+  rpc.request_decoder(
     request_decoders(),
     notification_decoders(),
     Initialized(defs.InitializedNotification(None, dict.new())),
@@ -132,46 +134,56 @@ pub fn request_decoder() {
 
 /// MCP JSON-RPC request encode
 ///
-pub fn request_encode(request) {
-  pollux.request_encode(request, do_request_encode, do_notification_encode)
+pub fn request_encode(
+  request: rpc.Request(ClientRequest, ClientNotification),
+) -> json.Json {
+  rpc.request_encode(request, do_request_encode, do_notification_encode)
 }
 
-/// Handler request to server MCP via JSON-RPC
+/// Handler JSON-RPC request to server MCP.
 ///
-pub fn handle_rpc(request, server: Server(a, b)) {
+/// - request: JSON-RPC request type intance.
+/// - server: MCP server to send request.
+///
+pub fn handle_rpc(
+  request: rpc.Request(ClientRequest, ClientNotification),
+  server: Server(a, b),
+) -> effect.Effect(option.Option(rpc.Response(ServerResult)), a, b) {
   case request {
-    pollux.Request(id:, value:, ..) ->
-      case handle_request(value, server) {
-        effect.Done(return) -> {
-          pollux.response(id, return) |> Some |> effect.Done
-        }
-        effect.CallTool(tool, resume) ->
-          effect.CallTool(tool, fn(reply) {
-            pollux.response(id, resume(reply)) |> Some
-          })
-        effect.ReadResource(resource, resume) ->
-          effect.ReadResource(resource, fn(reply) {
-            pollux.response(id, resume(reply)) |> Some
-          })
-        effect.GetPrompt(prompt, resume) ->
-          effect.GetPrompt(prompt, fn(reply) {
-            pollux.response(id, resume(reply)) |> Some
-          })
-        effect.Complete(ref, argument, context, resume) ->
-          effect.Complete(ref, argument, context, fn(reply) {
-            pollux.response(id, resume(reply)) |> Some
-          })
-      }
-    pollux.Notification(value:, ..) -> {
+    rpc.Notification(value:, ..) -> {
       let Nil = handle_notification(value, server)
       effect.Done(None)
     }
+    rpc.Request(id:, value:, ..) ->
+      case handle_request(value, server) {
+        effect.Done(return) ->
+          handle_response(return, id, function.identity)
+          |> effect.Done()
+        effect.CallTool(tool, resume) ->
+          effect.CallTool(tool, handle_response(_, id, resume))
+        effect.ReadResource(resource, resume) ->
+          effect.ReadResource(resource, handle_response(_, id, resume))
+        effect.GetPrompt(prompt, resume) ->
+          effect.GetPrompt(prompt, handle_response(_, id, resume))
+        effect.Complete(ref, argument, context, resume) ->
+          effect.Complete(ref, argument, context, handle_response(_, id, resume))
+      }
   }
 }
 
 /// Get tool by name in server MCP
 ///
-pub fn get_tool_by_name(server, name) {
+pub fn get_tool_by_name(
+  server: Server(a, b),
+  name: String,
+) -> Result(
+  u.Tool(
+    a,
+    List(#(String, domain.Ref(domain.Schema), Bool)),
+    List(#(String, domain.Ref(domain.Schema), Bool)),
+  ),
+  Nil,
+) {
   let Server(tools:, ..) = server
   list.find(tools, fn(tool) {
     let u.Tool(spec: u.Spec(name: n, ..), ..) = tool
@@ -184,7 +196,10 @@ pub fn get_tool_by_name(server, name) {
 
 /// Get prompt by name in server MCP
 ///
-pub fn get_prompt_by_name(server, name) {
+pub fn get_prompt_by_name(
+  server: Server(a, b),
+  name: String,
+) -> Result(#(defs.Prompt, decode.Decoder(b)), Nil) {
   let Server(prompts:, ..) = server
   list.find(prompts, fn(prompt) {
     let #(defs.Prompt(name: n, ..), _decoder) = prompt
@@ -195,9 +210,15 @@ pub fn get_prompt_by_name(server, name) {
   })
 }
 
+/// Handle MCP response
 ///
+/// of: Client request
+/// server: MCP server
 ///
-pub fn handle_request(of, server: Server(a, b)) {
+pub fn handle_request(
+  of: ClientRequest,
+  server: Server(a, b),
+) -> effect.Effect(Result(ServerResult, u.AnyError), a, b) {
   case of {
     Initialize(message) -> {
       initialize(message, server)
@@ -237,9 +258,9 @@ pub fn handle_request(of, server: Server(a, b)) {
     }
     // Subscription to resources
     Subscribe(_message) ->
-      reason.method_not_available("resources/subscribe") |> Error |> effect.Done
+      error.method_not_available("resources/subscribe") |> Error |> effect.Done
     Unsubscribe(_message) ->
-      reason.method_not_available("resources/unsubscribe")
+      error.method_not_available("resources/unsubscribe")
       |> Error
       |> effect.Done
     ListPrompts(message) -> {
@@ -264,7 +285,7 @@ pub fn handle_request(of, server: Server(a, b)) {
 
 ///
 ///
-pub fn request_method(request) {
+pub fn request_method(request: ClientRequest) -> String {
   case request {
     Initialize(_) -> "initialize"
     Ping(_) -> "ping"
@@ -284,7 +305,7 @@ pub fn request_method(request) {
 
 ///
 ///
-pub fn notification_method(notification) {
+pub fn notification_method(notification: ClientNotification) -> String {
   case notification {
     Cancelled(_) -> "notifications/cancelled"
     Initialized(_) -> "notifications/initialized"
@@ -293,18 +314,36 @@ pub fn notification_method(notification) {
   }
 }
 
-pub fn response_decoder(expected) {
-  pollux.response_decoder(expected)
+pub fn response_decoder(
+  expected: decode.Decoder(a),
+) -> decode.Decoder(rpc.Response(a)) {
+  rpc.response_decoder(expected)
 }
 
-pub fn response_encode(response) {
-  pollux.response_encode(response, do_response_encode)
+pub fn response_encode(response: rpc.Response(ServerResult)) -> json.Json {
+  rpc.response_encode(response, do_response_encode)
 }
 
 // PRIVATE
 //
 
-fn to_api_definition(tool) {
+fn handle_response(
+  reply: a,
+  id: rpc.Id,
+  resume: fn(a) -> Result(b, u.AnyError),
+) -> option.Option(rpc.Response(b)) {
+  id
+  |> rpc.response(resume(reply))
+  |> Some
+}
+
+fn to_api_definition(
+  tool: u.Tool(
+    a,
+    List(#(String, domain.Ref(domain.Schema), Bool)),
+    List(#(String, domain.Ref(domain.Schema), Bool)),
+  ),
+) -> defs.Tool {
   let u.Tool(spec:, ..) = tool
   defs.Tool(
     meta: None,
@@ -317,7 +356,9 @@ fn to_api_definition(tool) {
   )
 }
 
-fn cast_schema(args) {
+fn cast_schema(
+  args: List(#(String, domain.Ref(domain.Schema), Bool)),
+) -> defs.AnonA5a007cd {
   let #(required, properties) =
     list.map_fold(args, [], fn(acc, arg) {
       let #(name, schema, required) = arg
@@ -336,7 +377,7 @@ fn cast_schema(args) {
   )
 }
 
-fn do_response_encode(result) {
+fn do_response_encode(result: ServerResult) -> json.Json {
   case result {
     InitializeResult(m) -> defs.initialize_result_encode(m)
     PingResponse -> json.object([])
@@ -352,7 +393,9 @@ fn do_response_encode(result) {
   }
 }
 
-fn do_request_encode(request) {
+fn do_request_encode(
+  request: ClientRequest,
+) -> #(String, option.Option(json.Json)) {
   let method = request_method(request)
   let params = case request {
     Initialize(request) -> defs.initialize_request_encode(request)
@@ -373,7 +416,9 @@ fn do_request_encode(request) {
   #(method, Some(params))
 }
 
-fn do_notification_encode(notification) {
+fn do_notification_encode(
+  notification: ClientNotification,
+) -> #(String, option.Option(json.Json)) {
   let method = notification_method(notification)
   let params = case notification {
     Cancelled(n) -> defs.cancelled_notification_encode(n)
@@ -384,7 +429,9 @@ fn do_notification_encode(notification) {
   #(method, Some(params))
 }
 
-fn notification_decoders() {
+fn notification_decoders() -> List(
+  #(String, decode.Decoder(ClientNotification)),
+) {
   [
     #(
       "notifications/cancelled",
@@ -406,7 +453,7 @@ fn notification_decoders() {
   ]
 }
 
-fn request_decoders() {
+fn request_decoders() -> List(#(String, decode.Decoder(ClientRequest))) {
   [
     #("initialize", defs.initialize_request_decoder() |> decode.map(Initialize)),
     #("ping", defs.ping_request_decoder() |> decode.map(Ping)),
@@ -452,7 +499,9 @@ fn request_decoders() {
   ]
 }
 
-fn finish_call_tool(reply) {
+fn finish_call_tool(
+  reply: Result(dict.Dict(String, u.Any), String),
+) -> Result(ServerResult, a) {
   let result = case reply {
     Ok(reply) -> {
       let content =
@@ -482,21 +531,27 @@ fn finish_call_tool(reply) {
   Ok(CallToolResult(result))
 }
 
-fn finish_read_resource(resource, contents) {
+fn finish_read_resource(
+  resource: defs.Resource,
+  contents: effect.ResourceContents,
+) -> Result(ServerResult, a) {
   let defs.Resource(uri:, ..) = resource
   effect.resource_contents_to_result(uri, contents)
   |> ReadResourceResult
   |> Ok
 }
 
-fn finish_get_prompt(prompt, messages) {
+fn finish_get_prompt(
+  prompt: defs.Prompt,
+  messages: List(defs.PromptMessage),
+) -> Result(ServerResult, a) {
   let defs.Prompt(description:, ..) = prompt
 
   let result = defs.GetPromptResult(meta: None, description:, messages:)
   Ok(GetPromptResult(result))
 }
 
-fn text_content(content) {
+fn text_content(content: String) -> u.Any {
   u.Object(
     dict.from_list([
       #("type", u.String("text")),
@@ -505,7 +560,7 @@ fn text_content(content) {
   )
 }
 
-pub fn handle_notification(notification, _server) {
+pub fn handle_notification(notification: ClientNotification, _server: a) -> Nil {
   case notification {
     Cancelled(_message) -> Nil
     Initialized(_message) -> Nil
@@ -514,7 +569,7 @@ pub fn handle_notification(notification, _server) {
   }
 }
 
-fn initialize(_message, server) {
+fn initialize(_message: a, server: Server(b, c)) -> defs.InitializeResult {
   let Server(implementation:, ..) = server
   defs.InitializeResult(
     protocol_version: "2025-06-18",
@@ -535,7 +590,7 @@ fn initialize(_message, server) {
   )
 }
 
-fn list_tools(_message, server) {
+fn list_tools(_message: a, server: Server(b, c)) -> defs.ListToolsResult {
   let Server(tools:, ..) = server
   defs.ListToolsResult(
     meta: None,
@@ -544,7 +599,10 @@ fn list_tools(_message, server) {
   )
 }
 
-fn call_tool(message, server) {
+fn call_tool(
+  message: defs.CallToolRequest,
+  server: Server(a, b),
+) -> Result(a, u.AnyError) {
   let defs.CallToolRequest(name:, arguments:) = message
   case get_tool_by_name(server, name) {
     Ok(u.Tool(decoder:, ..)) -> {
@@ -555,19 +613,22 @@ fn call_tool(message, server) {
         |> u.any_to_dynamic
       case decode.run(arguments, decoder) {
         Ok(args) -> Ok(args)
-        Error(reason) -> Error(reason.invalid_arguments(name, reason))
+        Error(reason) -> Error(error.invalid_arguments(name, reason))
       }
     }
-    Error(Nil) -> Error(reason.unknown_tool(name))
+    Error(Nil) -> Error(error.unknown_tool(name))
   }
 }
 
-fn list_resources(_cursor, server) {
+fn list_resources(_cursor: a, server: Server(b, c)) -> defs.ListResourcesResult {
   let Server(resources:, ..) = server
   defs.ListResourcesResult(meta: None, resources:, next_cursor: None)
 }
 
-fn list_resource_templates(_cursor, server) {
+fn list_resource_templates(
+  _cursor: a,
+  server: Server(b, c),
+) -> defs.ListResourceTemplatesResult {
   let Server(resource_templates:, ..) = server
   defs.ListResourceTemplatesResult(
     meta: None,
@@ -576,7 +637,10 @@ fn list_resource_templates(_cursor, server) {
   )
 }
 
-fn read_resource(message, server) {
+fn read_resource(
+  message: defs.ReadResourceRequest,
+  server: Server(a, b),
+) -> Result(defs.Resource, u.AnyError) {
   let Server(resources:, ..) = server
   let defs.ReadResourceRequest(uri:) = message
 
@@ -587,10 +651,13 @@ fn read_resource(message, server) {
       False -> Error(Nil)
     }
   })
-  |> result.replace_error(reason.resource_not_found(uri))
+  |> result.replace_error(error.resource_not_found(uri))
 }
 
-fn list_prompts(message, server) {
+fn list_prompts(
+  message: defs.ListPromptsRequest,
+  server: Server(a, b),
+) -> defs.ListPromptsResult {
   let Server(prompts:, ..) = server
   let defs.ListPromptsRequest(cursor: _) = message
 
@@ -598,7 +665,10 @@ fn list_prompts(message, server) {
   defs.ListPromptsResult(meta: None, prompts:, next_cursor: None)
 }
 
-fn get_prompt(message, server) {
+fn get_prompt(
+  message: defs.GetPromptRequest,
+  server: Server(a, b),
+) -> Result(#(defs.Prompt, b), u.AnyError) {
   let defs.GetPromptRequest(name:, arguments:) = message
   case get_prompt_by_name(server, name) {
     Ok(#(prompt, decoder)) -> {
@@ -610,14 +680,16 @@ fn get_prompt(message, server) {
         |> u.any_to_dynamic
       case decode.run(arguments, decoder) {
         Ok(args) -> Ok(#(prompt, args))
-        Error(reason) -> Error(reason.invalid_arguments(name, reason))
+        Error(reason) -> Error(error.invalid_arguments(name, reason))
       }
     }
-    Error(Nil) -> Error(reason.unknown_prompt(name))
+    Error(Nil) -> Error(error.unknown_prompt(name))
   }
 }
 
-fn complete(message) {
+fn complete(
+  message: defs.CompleteRequest,
+) -> effect.Effect(Result(ServerResult, u.AnyError), a, b) {
   let defs.CompleteRequest(context:, argument:, ref:) = message
 
   let defs.Anon68f425dd(name:, value:) = argument
@@ -629,6 +701,7 @@ fn complete(message) {
   }
   let assert u.Object(properties) = ref
   let assert Ok(u.String(type_)) = dict.get(properties, "type")
+
   case type_ {
     "ref/resource" -> {
       let assert Ok(u.String(uri)) = dict.get(properties, "uri")
@@ -637,17 +710,17 @@ fn complete(message) {
       effect.Complete(ref:, argument:, context:, resume: finish_complete)
     }
     _ ->
-      reason.method_not_available("completion/complete") |> Error |> effect.Done
+      error.method_not_available("completion/complete") |> Error |> effect.Done
   }
 }
 
-fn finish_complete(completion) {
+fn finish_complete(completion: List(String)) -> Result(ServerResult, a) {
   complete_results(completion)
   |> CompleteResult
   |> Ok
 }
 
-fn complete_results(values) {
+fn complete_results(values: List(String)) -> defs.CompleteResult {
   let total = list.length(values)
   let #(values, has_more) = case total > 100 {
     True -> #(list.take(values, 100), True)
@@ -657,7 +730,7 @@ fn complete_results(values) {
   |> defs.CompleteResult(None, _)
 }
 
-fn set_level(message) {
+fn set_level(message: defs.SetLevelRequest) -> Result(ServerResult, u.AnyError) {
   let defs.SetLevelRequest(level:) = message
   case log.from_string(level) {
     Ok(level) -> {
@@ -665,6 +738,6 @@ fn set_level(message) {
       // PingResponse is empty object
       Ok(PingResponse)
     }
-    Error(Nil) -> Error(reason.invalid_log_level(level))
+    Error(Nil) -> Error(error.invalid_log_level(level))
   }
 }

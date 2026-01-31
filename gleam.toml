@@ -10,7 +10,6 @@ links = []
 gbr_json = { path = "../gbr_json" }
 gbr_shared = { path = "../gbr_shared" }
 
-pollux = "~> 1.0"
 simplifile = "~> 2.3"
 
 gleam_stdlib = "~> 0.68"
