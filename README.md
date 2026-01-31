@@ -18,13 +18,15 @@ MCP provides a standardized way to connect AI applications to external systems.
 
 > more: https://modelcontextprotocol.io/docs/getting-started/intro
 
-## Running
+## 🚀 Installing
 
 ```sh
 gleam add gbr_mcp@1
 ```
 
-## MCP JSON Schema Loading
+## 🛠️ Usage
+
+### 🧩 MCP JSON Schema Loading
 
 ```gleam
 import gbr/mcp/loader
@@ -41,7 +43,7 @@ pub fn main() -> Nil {
 }
 ```
 
-## MCP JSON-RPC Server
+### 📡 MCP JSON-RPC Server
 
 - [Example: Wisp Mist Server with Hello Tools](./examples/mcp_hello_srv)
 - [Example: Wisp Mist Server with Math Tools](./examples/mcp_hello_srv)

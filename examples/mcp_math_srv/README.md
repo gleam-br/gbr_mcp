@@ -1,15 +1,15 @@
-# MCP Server: Math Tools
+# 𝞹 MCP Server: Math Tools
 
 An example MCP server with math tools.
 
-## Build & Run
+## ⚡ Build & Run
 
 ```sh
 gleam build
 gleam run
 ```
 
-## Develop
+## 🎨 Develop
 
 Install easy [watchexec](https://github.com/watchexec/watchexec) and:
 
@@ -17,13 +17,13 @@ Install easy [watchexec](https://github.com/watchexec/watchexec) and:
 watchexec -r -e erl,mjs,gleam -- gleam run
 ```
 
-## Testing
+## 🧪 Testing
 
-## Check server up
+## 🔝 Server is up
 
 - Open your browser clicking [http://localhost:8080](http://localhost:8080).
 
-## Sending requests
+## ✈️ Sending requests
 
 ### Listing tools:
 - URL: http://localhost:8080/mcp

@@ -1,13 +1,13 @@
-# MCP Server: Hello Tools
+# 👋 MCP Server: Hello Tools
 
-## Build & Run
+## ⚡ Build & Run
 
 ```sh
 gleam build
 gleam run
 ```
 
-## Develop
+## 🎨 Develop
 
 Install easy [watchexec](https://github.com/watchexec/watchexec) and:
 
@@ -15,13 +15,13 @@ Install easy [watchexec](https://github.com/watchexec/watchexec) and:
 watchexec -r -e erl,mjs,gleam -- gleam run
 ```
 
-## Testing
+## 🧪 Testing
 
-## Check server up
+## 🔝 Server is up
 
 - Open your browser clicking [http://localhost:8080](http://localhost:8080).
 
-## Sending requests
+## ✈️ Sending requests
 
 ### Listing tools:
 - URL: http://localhost:8080/mcp
