@@ -41,9 +41,11 @@ pub fn main() -> Nil {
 }
 ```
 
-## MCP JSON-RPC handler
+## MCP JSON-RPC Server
 
-> TODO
+- [Example: Wisp Mist Server with Hello Tools](./examples/mcp_hello_srv)
+- [Example: Wisp Mist Server with Math Tools](./examples/mcp_hello_srv)
+- More examples comming soon...
 
 ## Development
 
