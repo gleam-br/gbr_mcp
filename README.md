@@ -20,8 +20,11 @@ MCP provides a standardized way to connect AI applications to external systems.
 
 ## 💡 Working in progress
 
-- [ ] 🩺 Update MCP json schema to 2025-11-25: parser error
+- [ ] 🐛 Update MCP json schema to 2025-11-25: parser error
 - [ ] 🔧 Client MCP comming soon...
+- [ ] 🩺 Update deps `gbr_...`
+  - [ ] Finish deps gbr and publish hex version.
+  - [ ] Update here `gleam.toml` to deps `gbr_...` published.
 
 
 ## 🚀 Installing
