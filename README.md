@@ -18,6 +18,12 @@ MCP provides a standardized way to connect AI applications to external systems.
 
 > more: https://modelcontextprotocol.io/docs/getting-started/intro
 
+## 💡 Working in progress
+
+- [ ] 🩺 Update MCP json schema to 2025-11-25: parser error
+- [ ] 🔧 Client MCP comming soon...
+
+
 ## 🚀 Installing
 
 ```sh
