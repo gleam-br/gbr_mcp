@@ -1,0 +1,18 @@
+name = "mcp_math_srv"
+version = "1.0.0"
+
+[dependencies]
+gbr_shared = { path = "../../../gbr_shared" }
+gbr_json = { path = "../../../gbr_json" }
+gbr_mcp = { path = "../.." }
+
+mist = "~> 5.0"
+wisp = "~> 2.2"
+
+gleam_stdlib = "~> 0.68"
+gleam_erlang = "~> 1.3"
+gleam_http = "~> 4.3"
+gleam_json = "~> 3.1"
+
+[dev-dependencies]
+gleeunit = "~> 1.9"
