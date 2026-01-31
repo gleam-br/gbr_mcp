@@ -11,7 +11,7 @@ gleam run
 
 ## Develop
 
-Install easy tool [watchexec](https://github.com/watchexec/watchexec) and:
+Install easy [watchexec](https://github.com/watchexec/watchexec) and:
 
 ```sh
 watchexec -r -e erl,mjs,gleam -- gleam run

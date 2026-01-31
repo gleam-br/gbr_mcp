@@ -1,24 +1,138 @@
-# mcp_hello_world
+# MCP Server: Hello Tools
 
-[![Package Version](https://img.shields.io/hexpm/v/mcp_hello_world)](https://hex.pm/packages/mcp_hello_world)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/mcp_hello_world/)
+## Build & Run
 
 ```sh
-gleam add mcp_hello_world@1
+gleam build
+gleam run
 ```
-```gleam
-import mcp_hello_world
 
-pub fn main() -> Nil {
-  // TODO: An example of the project in use
+## Develop
+
+Install easy [watchexec](https://github.com/watchexec/watchexec) and:
+
+```sh
+watchexec -r -e erl,mjs,gleam -- gleam run
+```
+
+## Testing
+
+## Check server up
+
+- Open your browser clicking [http://localhost:8080](http://localhost:8080).
+
+## Sending requests
+
+### Listing tools:
+- URL: http://localhost:8080/mcp
+- Method: POST
+- Content-Type: application/json
+- Body:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "tools/list",
+}
+```
+- Response:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": "1",
+    "result": {
+        "tools": [
+            {
+                "description": "Say hello world by gleam-br",
+                "inputSchema": {
+                    "properties": {},
+                    "required": [],
+                    "type": "object"
+                },
+                "name": "world",
+                "outputSchema": {
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "nullable": false,
+                            "deprecated": false
+                        }
+                    },
+                    "required": [
+                        "message"
+                    ],
+                    "type": "object"
+                },
+                "title": "Hello World"
+            },
+            {
+                "description": "Say hello to greetings welcome to glem-br",
+                "inputSchema": {
+                    "properties": {
+                        "greetings": {
+                            "type": "string",
+                            "nullable": false,
+                            "deprecated": false
+                        }
+                    },
+                    "required": [
+                        "greetings"
+                    ],
+                    "type": "object"
+                },
+                "name": "welcome",
+                "outputSchema": {
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "nullable": false,
+                            "deprecated": false
+                        }
+                    },
+                    "required": [
+                        "message"
+                    ],
+                    "type": "object"
+                },
+                "title": "Hello welcome greetings"
+            }
+        ]
+    }
 }
 ```
 
-Further documentation can be found at <https://hexdocs.pm/mcp_hello_world>.
-
-## Development
-
-```sh
-gleam run   # Run the project
-gleam test  # Run the tests
+### Call tool
+- URL: http://localhost:8080/mcp
+- Method: POST
+- Content-Type: application/json
+- Body:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "tools/call",
+  "params": {
+    "name": "welcome",
+    "arguments": { "greetings": "Paulo R. A. Sales" }
+  }
+}
+```
+Response:
+```json
+{
+  "jsonrpc":"2.0",
+  "id":"1",
+  "result":{
+    "content":[
+      {
+        "type":"text",
+        "text": "{\"message\":\"Hello Paulo R. A. Sales, welcome to gleam-br\"}"
+      }
+    ],
+    "isError":false,
+    "structuredContent": {
+      "message": "Hello Paulo, welcome to gleam-br"
+    }
+  }
+}
 ```
