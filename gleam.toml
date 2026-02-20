@@ -1,18 +1,16 @@
 name = "gbr_mcp"
-version = "1.0.0"
+version = "1.0.0-alpha"
 
-description = "🧠 MCP Server/Client builder"
+description = "MCP (Model Context Protocol) is an open-source standard for connecting AI applications to external systems."
+repository = { type = "github", user = "gleam-br", repo = "gbr_mcp" }
 licences = ["Apache-2.0"]
-# repository = { type = "github", user = "", repo = "" }
 links = []
 
 [dependencies]
 gbr_json = { path = "../gbr_json" }
 gbr_shared = { path = "../gbr_shared" }
-
 simplifile = "~> 2.3"
-
-gleam_stdlib = "~> 0.68"
+gleam_stdlib = "~> 0.69"
 gleam_json = "~> 3.1"
 
 [dev-dependencies]
