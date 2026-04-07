@@ -8,7 +8,6 @@ links = []
 
 [dependencies]
 gbr_json = { path = "../gbr_json" }
-gbr_shared = { path = "../gbr_shared" }
 simplifile = "~> 2.3"
 gleam_stdlib = "~> 0.69"
 gleam_json = "~> 3.1"

@@ -8,7 +8,7 @@ import gleam/dynamic/decode
 import gleam/list
 import gleam/option.{type Option, None, Some}
 
-import gbr/shared/utils
+import gbr/json/schema/utils
 
 import gbr/json/schema/domain
 

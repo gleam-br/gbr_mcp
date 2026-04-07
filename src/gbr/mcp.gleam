@@ -27,8 +27,8 @@ import gleam/option.{None, Some}
 import gleam/pair
 import gleam/result
 
-import gbr/shared/log
-import gbr/shared/utils as u
+import gbr/json/schema/utils as u
+import gbr/mcp/log
 
 import gbr/json/rpc
 import gbr/json/rpc/error
@@ -41,7 +41,7 @@ import gbr/mcp/loader
 
 /// MCP Server tool spec.
 ///
-/// Uses generic gbr/shared/utils.{type Tool}
+/// Uses generic gbr/json/schema/utils.{type Tool}
 ///
 pub type Tool(t) =
   u.Tool(t, schema.ObjectSchema, schema.ObjectSchema)
@@ -56,7 +56,7 @@ pub type Tool(t) =
 ///
 /// Generic:
 ///
-/// - tool: `gbr/shared/utils.{type Tool}` to wrapper into Tool.
+/// - tool: `gbr/json/schema/utils.{type Tool}` to wrapper into Tool.
 /// - prompt: Prompt def type. ?? TODO ??
 ///
 pub type Server(tool, prompt) {

@@ -6,7 +6,7 @@ import gleam/bit_array
 import gleam/dict.{type Dict}
 import gleam/option.{type Option, None}
 
-import gbr/shared/utils as u
+import gbr/json/schema/utils as u
 
 import gbr/mcp/gen/defs
 
