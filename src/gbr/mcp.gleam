@@ -61,10 +61,10 @@ pub type Tool(t) =
 ///
 pub type Server(tool, prompt) {
   Server(
+    implementation: defs.Implementation,
     tools: List(Tool(tool)),
     prompts: List(#(defs.Prompt, decode.Decoder(prompt))),
     resources: List(defs.Resource),
-    implementation: defs.Implementation,
     resource_templates: List(defs.ResourceTemplate),
   )
 }

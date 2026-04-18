@@ -97,7 +97,7 @@ pub fn set_description(tool, description) {
   defs.Tool(..tool, description: Some(description))
 }
 
-pub fn to_api_definition(tool) {
+pub fn to_api_definition(tool: Tool(t)) -> defs.Tool {
   let Tool(spec:, ..) = tool
   defs.Tool(
     name: spec.name,
