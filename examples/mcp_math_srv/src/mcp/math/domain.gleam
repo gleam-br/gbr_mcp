@@ -9,13 +9,14 @@ import gleam/option.{Some}
 import gleam/result
 
 import gbr/json/schema/domain
+import gbr/json/schema/utils
+
 import gbr/mcp
 import gbr/mcp/gen/defs
-import gbr/shared/utils
 
 /// Math tool type.
 ///
-pub type Tool {
+pub type ToolMath {
   Random
   Add(Int, Int)
 }
@@ -40,7 +41,7 @@ pub fn server(_context) {
 
 /// Call math tool
 ///
-pub fn call_tool(tool) {
+pub fn call_tool(tool: ToolMath) -> Result(dict.Dict(String, utils.Any), a) {
   case tool {
     Random -> {
       use number <- result.map(random())
@@ -58,7 +59,13 @@ pub fn call_tool(tool) {
 
 /// Get list of math tools
 ///
-fn tools() {
+fn tools() -> List(
+  utils.Tool(
+    ToolMath,
+    List(#(String, domain.Ref(domain.Schema), Bool)),
+    List(#(String, domain.Ref(domain.Schema), Bool)),
+  ),
+) {
   [
     utils.Tool(
       spec: utils.Spec(
@@ -90,10 +97,10 @@ fn tools() {
   ]
 }
 
-fn random() {
+fn random() -> Result(Int, a) {
   Ok(int.random(100))
 }
 
-fn add(x, y) {
+fn add(x: Int, y: Int) -> Result(Int, a) {
   Ok(x + y)
 }

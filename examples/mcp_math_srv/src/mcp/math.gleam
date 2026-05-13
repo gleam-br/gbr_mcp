@@ -86,7 +86,7 @@ fn handle(
 
 fn handle_mcp(
   mcp_request: rpc.Request(mcp.ClientRequest, mcp.ClientNotification),
-  server: mcp.Server(domain.Tool, a),
+  server: mcp.Server(domain.ToolMath, a),
 ) -> option.Option(rpc.Response(mcp.ServerResult)) {
   case mcp.handle_rpc(mcp_request, server) {
     effect.Done(result) -> result

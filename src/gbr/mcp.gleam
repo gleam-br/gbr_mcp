@@ -27,17 +27,20 @@ import gleam/option.{None, Some}
 import gleam/pair
 import gleam/result
 
-import gbr/json/schema/utils as u
-import gbr/mcp/log
-
 import gbr/json/rpc
 import gbr/json/rpc/error
 import gbr/json/schema
 import gbr/json/schema/domain
+import gbr/json/schema/utils as u
 
 import gbr/mcp/effect
 import gbr/mcp/gen/defs
 import gbr/mcp/loader
+import gbr/mcp/log
+
+//
+// ----- Tipos
+//
 
 /// MCP Server tool spec.
 ///

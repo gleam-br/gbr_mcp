@@ -7,7 +7,7 @@ licences = ["Apache-2.0"]
 links = []
 
 [dependencies]
-gleam_stdlib = "~> 0.71"
+gleam_stdlib = "~> 1.0"
 gleam_json = "~> 3.1"
 
 simplifile = "~> 2.3"
@@ -15,4 +15,4 @@ simplifile = "~> 2.3"
 gbr_json = { path = "../gbr_json" }
 
 [dev-dependencies]
-gleeunit = "~> 1.9"
+gleeunit = "~> 1.10"
